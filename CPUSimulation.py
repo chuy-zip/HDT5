@@ -33,8 +33,6 @@ def CpuProcessReady(env, name, memory, Instructions, RAM, CPUs):
        yield req
 
        yield env.process(ProcessRunning(env, name, memory, Instructions, RAM, CPUs, req))
-          
-   yield env.timeout(10)
 
 def CPUProc_Generator(env, Qty, Interval, RAM, CPUs):
 
@@ -49,11 +47,10 @@ def CPUProc_Generator(env, Qty, Interval, RAM, CPUs):
             RAM.get(random_Mem)
             env.process(CpuProcessReady(env, "Proceso %d" % i, random_Mem, random_Inst, RAM, CPUs))
         else:
-            print("Memoria insuficiente para el %s, agregado a la lista de espera" % ("Proceso %d" % i))
+            print("Memoria insuficiente para el %s, agregado a la lista de espera en %.1f" % ("Proceso %d" % i, env.now))
             env.process(ProcessWaitingforRam(env, "Proceso %d" % i, random_Mem, random_Inst, RAM, CPUs) )
 
 def ProcessWaitingforRam (env, name, memory, Instructions, RAM, CPUs):
-     
     if(RAM.level - memory >= 0):
         print("Memoria disponible, Ingresando %s en %d" % (name, env.now))
         yield env.process(CpuProcessReady(env, name, memory, Instructions, RAM, CPUs))
@@ -66,7 +63,7 @@ def ProcessWaitingforRam (env, name, memory, Instructions, RAM, CPUs):
 #########################################################################################################
 print("Bienvenido al simulador de procesos en un CPU, por favor ingrese los siguientes datos")
 
-RANDOM_SEED = 4
+RANDOM_SEED = 42
 ProcessesQty = int(input("Cuantos procesos se desean crear para la simulacion\n"))
 RAMSpace = int(input("Cuanto espacio de RAM estara disponible\n"))
 InstructionsPerSecond = int(input("Que tan rapido sera el procesador (Cuantas instrucciones podra hacer por segundo)\n"))
@@ -86,4 +83,11 @@ RAM = simpy.Container(env, init = RAMSpace, capacity = RAMSpace)
 CPUs = simpy.Resource(env, capacity = ProccesorsQty)
 
 env.process(CPUProc_Generator(env, ProcessesQty, Interval, RAM, CPUs))
-env.run(10000)
+env.run()
+
+# Pendiente
+# Hacer que sea dinamico con, el numero de instrucciones por segundo
+# Ver promedios y desviacion estandar
+#
+#
+#

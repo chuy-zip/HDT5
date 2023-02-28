@@ -9,6 +9,7 @@ END_TIMES = []
 def CPUProc_Generator(env, Qty, Interval, RAM, CPUs, InstrP_S):
 
     for i in range(1 , Qty + 1):
+        yield  env.timeout(random.expovariate(1.0/Interval))
         random_Inst = random.randint(1, 10)
         random_Mem = random.randint(1, 10)
 
@@ -18,19 +19,17 @@ def CPUProc_Generator(env, Qty, Interval, RAM, CPUs, InstrP_S):
         if(RAM.level - random_Mem >= 0):
             yield RAM.get(random_Mem)
             env.process(CpuProcessReady(env, "Proceso %d" % i, random_Mem, random_Inst, RAM, CPUs, InstrP_S))
-            yield  env.timeout(random.expovariate(1.0/Interval))
-
 
         else:
             print("Memoria insuficiente para el %s, agregado a la lista de espera en %.1f" % ("Proceso %d" % i, env.now))
             env.process(ProcessWaitingforRam(env, "Proceso %d" % i, random_Mem, random_Inst, RAM, CPUs, InstrP_S) )
-            yield  env.timeout(random.expovariate(1.0/Interval))
+
 
 def CpuProcessReady(env, name, memory, Instructions, RAM, CPUs, InstrP_S):
    print("%s ha pasado a la ram y esta listo para ejecutarse en %.1f" % (name, env.now))
    with CPUs.request() as req:
        yield req
-       yield env.process(ProcessRunning(env, name, memory, Instructions, RAM, CPUs, req, InstrP_S))
+       env.process(ProcessRunning(env, name, memory, Instructions, RAM, CPUs, req, InstrP_S))
 
 def ProcessRunning(env, name, memory, Instructions, RAM, CPUs, req, InstrP_S):
     
@@ -42,13 +41,14 @@ def ProcessRunning(env, name, memory, Instructions, RAM, CPUs, req, InstrP_S):
         END_TIMES.append(round(env.now, 1))
         yield RAM.put(memory)
         
+        
     else:
         rand_Status = random.randint(1, 2)
 
         if(rand_Status == 2):
             print("%s ejecutado, ahora tiene %d instrucciones y regresa directamente a la cola de procesos en %d" % (name, Instructions, env.now))        
-            CPUs.release(req) 
-            env.process(CpuProcessReady(env, name, memory, Instructions, RAM, CPUs, InstrP_S))
+            CPUs.release(req)
+            yield env.process(CpuProcessReady(env, name, memory, Instructions, RAM, CPUs, InstrP_S))
         
         elif(rand_Status == 1):
              CPUs.release(req)
@@ -56,7 +56,7 @@ def ProcessRunning(env, name, memory, Instructions, RAM, CPUs, req, InstrP_S):
              yield env.timeout(3)
              
              print("%s sale de la cola de espera, ahora tiene %d instrucciones y regresa a la cola de procesos en %d" % (name, Instructions, env.now))        
-             env.process(CpuProcessReady(env, name, memory, Instructions, RAM, CPUs, InstrP_S))
+             yield env.process(CpuProcessReady(env, name, memory, Instructions, RAM, CPUs, InstrP_S))
 
 
 def ProcessWaitingforRam (env, name, memory, Instructions, RAM, CPUs, InstrP_S):
@@ -66,7 +66,7 @@ def ProcessWaitingforRam (env, name, memory, Instructions, RAM, CPUs, InstrP_S):
     
     else:
         print("%s esperando por espacio de ram en %d" % (name , env.now))
-        yield env.timeout(1) #Check every cicle for available memory
+        yield env.timeout(2) #Check every cicle for available memory
         env.process(ProcessWaitingforRam (env, name, memory, Instructions, RAM, CPUs, InstrP_S))
         
 
@@ -103,17 +103,11 @@ RUN_TIMES = []
 print(len(START_TIMES))
 print(len(END_TIMES))
 
-#for i in range (len(START_TIMES)):
-#   RUN_TIMES.append(round(END_TIMES[i] - START_TIMES[i], 1))
+for i in range (len(START_TIMES)):
+   RUN_TIMES.append(round(END_TIMES[i] - START_TIMES[i], 1))
 
-#print(RUN_TIMES)
+print(RUN_TIMES)
 
-#print("Tiempo promedio de los procesos hasta salir: %d " % np.average(RUN_TIMES))
+print("Tiempo promedio de los procesos hasta salir: %d " % np.average(RUN_TIMES))
 
-#print("Desviacion estandar de los tiempos de los procesos: %d" % np.std(RUN_TIMES))
-
-# Pendiente
-# Ver promedios y desviacion estandar
-#
-#
-#
+print("Desviacion estandar de los tiempos de los procesos: %d" % np.std(RUN_TIMES))

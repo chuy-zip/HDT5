@@ -32,12 +32,12 @@ def CpuProcessReady(env, name, memory, Instructions, RAM, InstrP_S,tempInterval)
    start = round(env.now, 1)
 
    yield RAM.get(memory) #Waiting for available ram
-   
    ##Queue for Cpu proceseses, it while only execute once the processor is free
-   with CPUs.request() as req:
-       yield req
-       while Instructions > 0:  
-            
+   
+   while Instructions > 0:  
+        with CPUs.request() as req:
+            yield req
+       
             Instructions = Instructions - InstrP_S
             
             if(Instructions <= 0 ):
@@ -84,8 +84,8 @@ env = simpy.Environment()
 RAM = simpy.Container(env, init = RAMSpace, capacity = RAMSpace)  
 CPUs = simpy.Resource(env, capacity = ProccesorsQty)
 
-for i in range():
-    tempInterval = (random.expovariate(1(Interval)))
+for i in range(ProcessesQty):
+    tempInterval = (random.expovariate(1/Interval))
     random_Inst = random.randint(1, 10)
     random_Mem = random.randint(1, 10)
     #Creating program

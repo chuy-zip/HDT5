@@ -30,8 +30,9 @@ def CpuProcessReady(env, name, memory, Instructions, RAM, CPUs, InstrP_S, start)
    with CPUs.request() as req:
        yield req
        while Instructions > 0: #Process will be 
+            
             Instructions = Instructions - InstrP_S
-
+            
             if(Instructions <= 0 ):
                 yield env.timeout(InstrP_S)
                 print("%s terminado en %.1f" % (name, env.now))
@@ -79,7 +80,9 @@ CPUs = simpy.Resource(env, capacity = ProccesorsQty)
 env.process(CPUProc_Generator(env, ProcessesQty, Interval, RAM, CPUs, InstrP_S))
 env.run()
 
-print("Tiempos de ejecuacion de cada proceso: %d " % CRUN_TIME)
+print("Tiempos de ejecuacion de cada proceso: ")
+
+print(CRUN_TIME)
 
 print("Tiempo promedio de los procesos hasta salir nuevo: %d " % np.average(CRUN_TIME))
 

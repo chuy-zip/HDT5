@@ -24,8 +24,15 @@ CRUN_TIME = []
         #env.process(CpuProcessReady(env, "Proceso %d" % i, random_Mem, random_Inst, RAM, CPUs, InstrP_S, start))
 
 ##Process ready to ask for cpu
-def CpuProcessReady(env, name, memory, Instructions, RAM, CPUs, InstrP_S, start):
+def CpuProcessReady(env, name, memory, Instructions, RAM, InstrP_S,tempInterval):
+   yield env.timeout(tempInterval)
+   print("%s creado en %.1f con memoria de %i con %i instrucciones" % ("Proceso %d" % i, env.now,random_Mem, random_Inst))
+
    print("%s ha pasado a la ram y esta listo para ejecutarse en %.1f" % (name, env.now))
+   start = round(env.now, 1)
+
+   yield RAM.get(memory) #Waiting for available ram
+   
    ##Queue for Cpu proceseses, it while only execute once the processor is free
    with CPUs.request() as req:
        yield req
@@ -81,7 +88,9 @@ for i in range():
     tempInterval = (random.expovariate(1(Interval)))
     random_Inst = random.randint(1, 10)
     random_Mem = random.randint(1, 10)
-    env.process(CpuProcessReady(env, ProcessesQty, Interval, RAM, CPUs, InstrP_S))
+    #Creating program
+    env.process(CpuProcessReady(env, "Proceso %d" % i, random_Mem, random_Inst, RAM, InstrP_S,tempInterval))
+
 env.run()
 
 print("Tiempos de ejecuacion de cada proceso: ")

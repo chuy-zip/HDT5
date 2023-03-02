@@ -1,3 +1,4 @@
+#Ricardo Chuy 221007 Hoja de trabajo 5 
 import simpy
 import random
 import numpy as np
@@ -7,25 +8,8 @@ START_TIMES = []
 END_TIMES = []
 CRUN_TIME = []
 
-#def CPUProc_Generator(env, Qty, Interval, RAM, CPUs, InstrP_S):
-
-    ### Generating Cpu process with an interval
-    #for i in range(1 , Qty + 1):
-        #yield  env.timeout(random.expovariate(1.0/Interval))
-        #random_Inst = random.randint(1, 10)
-        #random_Mem = random.randint(1, 10)
-
-        #print("%s creado en %.1f con memoria de %i con %i instrucciones" % ("Proceso %d" % i, env.now,random_Mem, random_Inst))
-        #start = round(env.now, 1)
-
-        #yield RAM.get(random_Mem) #Waiting for available ram
-
-        ##Program ready to go to ram
-        #env.process(CpuProcessReady(env, "Proceso %d" % i, random_Mem, random_Inst, RAM, CPUs, InstrP_S, start))
-
-##Process ready to ask for cpu
 def CpuProcessReady(env, name, memory, Instructions, RAM, InstrP_S,tempInterval):
-   yield env.timeout(tempInterval)
+   yield env.timeout(tempInterval) #Interval for creation of process
    print("%s creado en %.1f con memoria de %i con %i instrucciones" % ("Proceso %d" % i, env.now,random_Mem, random_Inst))
 
    print("%s ha pasado a la ram y esta listo para ejecutarse en %.1f" % (name, env.now))
@@ -34,14 +18,14 @@ def CpuProcessReady(env, name, memory, Instructions, RAM, InstrP_S,tempInterval)
    yield RAM.get(memory) #Waiting for available ram
    ##Queue for Cpu proceseses, it while only execute once the processor is free
    
-   while Instructions > 0:  
-        with CPUs.request() as req:
-            yield req
+   while Instructions > 0:  #While the process still has instructions
+        with CPUs.request() as req: 
+            yield req  #request cpu
        
             Instructions = Instructions - InstrP_S
             
-            if(Instructions <= 0 ):
-                yield env.timeout(InstrP_S)
+            if(Instructions <= 0 ): #Free process if tehere are no more instructions
+                yield env.timeout(1)
                 print("%s terminado en %.1f" % (name, env.now))
                 end = round(env.now, 1)
                 CRUN_TIME.append(round(end - start, 1))
@@ -53,13 +37,13 @@ def CpuProcessReady(env, name, memory, Instructions, RAM, InstrP_S,tempInterval)
 
                 if(rand_Status == 2):
                     CPUs.release(req)
-                    yield env.timeout(InstrP_S)
+                    yield env.timeout(1)
                     print("%s ejecutado, ahora tiene %d instrucciones y regresa directamente a la cola de procesos en %d" % (name, Instructions, env.now))        
                 
                 elif(rand_Status == 1):
                     CPUs.release(req)
                     print("%s ejecutado y puesto en espera, ahora tiene %d instrucciones y regresa a la cola waiting en %d" % (name, Instructions, env.now))                                
-                    yield env.timeout(3)
+                    yield env.timeout(4)
                     print("%s sale de la cola de espera, ahora tiene %d instrucciones y regresa a la cola de procesos en %d" % (name, Instructions, env.now))        
 
 print("Bienvenido al simulador de procesos en un CPU, por favor ingrese los siguientes datos")
@@ -88,7 +72,7 @@ for i in range(ProcessesQty):
     tempInterval = (random.expovariate(1/Interval))
     random_Inst = random.randint(1, 10)
     random_Mem = random.randint(1, 10)
-    #Creating program
+    #Creating process with interval
     env.process(CpuProcessReady(env, "Proceso %d" % i, random_Mem, random_Inst, RAM, InstrP_S,tempInterval))
 
 env.run()
